@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include_directories(./include/BaseApp)
+file(GLOB src_files ./src/*.cpp)
+add_library(BaseApp STATIC ${src_files})
