@@ -5,13 +5,15 @@
 
 #define START_BUFFER_SIZE 1024
 
-App::ByteBuffer::ByteBuffer() : _start(nullptr), _end(nullptr), _max(nullptr)
+App::ByteBuffer::ByteBuffer() : 
+	_start(nullptr), _end(nullptr), _max(nullptr), _popPtr(nullptr)
 {
 	_start = (uint8_t*)malloc(START_BUFFER_SIZE);
 	if (!_start)
 		std::cout << "Bad Malloc [App::ByteBuffer::ByteBuffer()]" << std::endl;
 
 	_end = _start;
+	_popPtr = _start;
 	_max = _start + (START_BUFFER_SIZE - 1);
 }
 
@@ -22,6 +24,7 @@ App::ByteBuffer::ByteBuffer(const ByteBuffer &b) : _start(nullptr), _end(nullptr
 	memcpy(_start, b._start, b._end - b._start);
 	_end = _start + (b._end - b._start);
 	_max = _start + (b._max - b._start);
+	_popPtr = _start + (b._popPtr - b._start);
 }
 
 
@@ -30,6 +33,7 @@ App::ByteBuffer::ByteBuffer(ByteBuffer &&b) : _start(b._start), _end(b._end), _m
 	b._start = nullptr;
 	b._end = nullptr;
 	b._max = nullptr;
+	b._popPtr = nullptr;
 }
 
 
@@ -38,11 +42,13 @@ App::ByteBuffer& App::ByteBuffer::operator= (const ByteBuffer &b)
 	_start = nullptr;
 	_end = nullptr;
 	_max = nullptr;
+	_popPtr = nullptr;
 
 	_start = (uint8_t*)malloc(b._max - b._start);
 	memcpy(_start, b._start, b._end - b._start);
 	_end = _start + (b._end - b._start);
 	_max = _start + (b._max - b._start);
+	_popPtr = _start + (b._popPtr - b._start);
 
 	return *this;
 }
@@ -66,27 +72,14 @@ void* App::ByteBuffer::head() const
 }
 
 
-void App::ByteBuffer::expandmax(uint32_t newsize)
+void App::ByteBuffer::expandMax(uint32_t newsize)
 {
 	while (size() < newsize)
 		resize();
 }
 
 
-void App::ByteBuffer::pushstring(const std::string &b)
-{
-	unsigned long totalsize = sizeof(char) * b.length();
-	while (_end + totalsize >= _max)
-		resize();
-
-	for (char c : b)
-	{
-		push(sizeof(char), &c);
-	}
-}
-
-
-void App::ByteBuffer::push(unsigned long size, const void *data)
+void App::ByteBuffer::pushBack(unsigned long size, const void *data)
 {
 	while (_end + size >= _max)
 		resize();
@@ -97,33 +90,12 @@ void App::ByteBuffer::push(unsigned long size, const void *data)
 }
 
 
-std::string App::ByteBuffer::popstring(unsigned int numchars)
+void* App::ByteBuffer::popFront(unsigned long size)
 {
-	std::string ret;
-
-	if (_end - (numchars * sizeof(char)) >= _start)
+	if (_popPtr + size <= _end)
 	{
-		for (unsigned int i = 0; i < numchars; ++i)
-		{
-			ret.push_back(*((char*)pop(sizeof(char))));
-		}
-	}
-
-	std::reverse(ret.begin(), ret.end());
-	return ret;
-}
-
-
-void* App::ByteBuffer::pop(unsigned long size)
-{
-	if (_end - size >= _start)
-	{
-		void *data = malloc(size);
-		if (!data)
-			std::cout << "Bad Malloc [App::ByteBuffer::pop(unsigned long size)]" << std::endl;
-
-		memcpy(data, _end - size, size);
-		_end -= size;
+		void *data = _popPtr;
+		_popPtr += size;
 		return data;
 	}
 
