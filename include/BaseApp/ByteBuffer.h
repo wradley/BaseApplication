@@ -16,20 +16,18 @@ namespace App
 
 		unsigned int size() const;
 		void* head() const;
-		void expandmax(uint32_t newsize);
+		void expandMax(uint32_t newsize);
 
 		// push
-		void pushstring(const std::string &b);
-		void push(unsigned long size, const void *data);
+		void pushBack(unsigned long size, const void *data);
 
 		// pop
-		std::string popstring(unsigned int numchars);
-		void* pop(unsigned long size); // must free it
+		void* popFront(unsigned long size); // must free it
 
 	private:
 
 		void resize();
-		uint8_t *_start, *_end, *_max;
+		uint8_t *_start, *_popPtr, *_end, *_max;
 
 	};
 }
