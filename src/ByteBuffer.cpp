@@ -105,8 +105,8 @@ void* App::ByteBuffer::popFront(unsigned long size)
 
 void App::ByteBuffer::resize()
 {
-	unsigned long currmax = _max - _start;
-	unsigned long currsize = _end - _start;
+	unsigned long long currmax = _max - _start;
+	unsigned long long currsize = _end - _start;
 	_start = (uint8_t*)realloc(_start, currmax * 2);
 	if (!_start)
 		std::cout << "Bad Realloc [App::ByteBuffer::resize()]" << std::endl;
