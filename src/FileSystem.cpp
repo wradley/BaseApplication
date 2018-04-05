@@ -24,7 +24,7 @@ App::ByteBuffer App::FileSystem::ReadBytes(const std::string &filename)
 	infile.seekg(0, infile.beg);
 
 	//read file
-	b.expandmax((uint32_t)length);
+	b.expandMax((uint32_t)length);
 	infile.read((char*)b.head(), length);
 
 	infile.close();
